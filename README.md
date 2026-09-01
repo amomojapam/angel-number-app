@@ -60,3 +60,34 @@ app/
 `src/components/angelMascot.js` の `angelMascotSVG()` の戻り値を、
 `<img src="public/angel/angel-main.png" ...>` のようなタグに差し替えることで、
 実イラストへ切り替えられます。
+
+---
+
+## 公開先
+
+- GitHub Pages: https://amomojapam.github.io/angel-number-app/
+  （`main` ブランチに push すると数分で自動反映されます）
+
+## 検索対策・アクセス解析について（要Googleアカウント作業）
+
+コード側は対応済みですが、以下はGoogleアカウントでの操作が必要なため、私の方では実施していません。
+
+### 1. Googleに登録して検索結果に出やすくする（Search Console）
+1. https://search.google.com/search-console にアクセスし、Googleアカウントでログイン
+2. 「URLプレフィックス」に `https://amomojapam.github.io/angel-number-app/` を入力し追加
+3. 所有権の確認は「HTMLタグ」方式が簡単です（表示されたmetaタグを教えてもらえれば、私が `index.html` に追加します）
+4. 確認後、サイドメニュー「サイトマップ」から `sitemap.xml` を送信
+
+これでGoogleに「このサイトが存在する」と伝わり、徐々にインデックス（検索結果への掲載）が進みます。
+ただし新規サイトが検索上位に出るには、内容の充実や被リンクなど時間のかかる要素も影響するため、即効性はない点はご了承ください。
+
+### 2. アクセス解析（誰が何人見たか）
+`index.html` にGoogle Analytics 4のコードをコメントアウトで用意済みです。
+1. https://analytics.google.com/ でプロパティを作成し、測定ID（`G-`から始まるID）を取得
+2. その測定IDを教えてもらえれば、私が `index.html` のコメントを外して設定します
+
+もっと手軽な代替案として、GitHubの「Insights → Traffic」でも、リポジトリ自体の閲覧数・クローン数は無料で確認できます（設定不要）。
+
+### 3. 多くの人に見てもらう
+- 結果画面の「𝕏にシェアする」ボタンから、診断結果をXに投稿できます
+- SNSでシェアした際に表示されるカード画像（OGP画像）も設定済みです（`public/og-image.jpg`）
