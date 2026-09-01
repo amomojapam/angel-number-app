@@ -104,7 +104,6 @@ function renderTop() {
 // 画面: テーマ選択
 // ---------------------------------------------------------------
 function renderTheme() {
-  const selected = state.selectedThemeId;
   return `
     <div class="screen">
       <button type="button" class="step-back" data-action="back-to-top">← 数字を入力し直す</button>
@@ -115,20 +114,13 @@ function renderTheme() {
 
       <div class="theme-grid">
         ${THEMES.map((t) => `
-          <button type="button" class="theme-card ${selected === t.id ? "selected" : ""}"
+          <button type="button" class="theme-card"
             style="--tint-bg:var(--theme-${t.accent}-bg); --tint-fg:var(--theme-${t.accent}-fg);"
             data-action="select-theme" data-id="${t.id}">
             <span class="icon">${t.icon}</span>
             <span>${t.label}</span>
           </button>
         `).join("")}
-      </div>
-
-      <div class="theme-cta-wrap">
-        ${selected
-          ? `<button type="button" class="btn-primary" data-action="reveal">天使からのメッセージを見る ✧</button>`
-          : `<p class="lede" style="margin:0;">気になるテーマを、ひとつ選んでくださいね。</p>`
-        }
       </div>
     </div>
   `;
@@ -271,7 +263,7 @@ app.addEventListener("click", (e) => {
     render();
   } else if (action === "select-theme") {
     state.selectedThemeId = target.dataset.id;
-    render();
+    revealMessage();
   } else if (action === "reveal") {
     revealMessage();
   } else if (action === "replay") {
