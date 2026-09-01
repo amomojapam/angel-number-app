@@ -7,6 +7,7 @@ const { motifIconMarkup } = window.App.motifIcons;
 const app = document.getElementById("app");
 
 const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222"];
+const SITE_URL = "https://amomojapam.github.io/angel-number-app/";
 
 const state = {
   step: "top", // top | theme | loading | result
@@ -176,6 +177,9 @@ function renderResult() {
       </div>
 
       <div class="result-actions">
+        <a class="btn-share-x" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          `【${r.number}】のエンジェルナンバー診断\n「${r.card.title}」\n${r.summary}\n\n#エンジェルナンバー #天使からのメッセージ`
+        )}&url=${encodeURIComponent(SITE_URL)}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
         <button type="button" class="btn-outline" data-action="replay">↻ もう一度見る</button>
         <button type="button" class="btn-primary" data-action="another-theme">別のテーマで見る →</button>
       </div>
@@ -267,12 +271,12 @@ app.addEventListener("click", (e) => {
   } else if (action === "reveal") {
     revealMessage();
   } else if (action === "replay") {
-    state.step = "loading";
+    state.number = "";
+    state.selectedThemeId = null;
+    state.reading = null;
+    state.inputError = "";
+    state.step = "top";
     render();
-    setTimeout(() => {
-      state.step = "result";
-      render();
-    }, 900);
   } else if (action === "another-theme") {
     state.selectedThemeId = null;
     state.step = "theme";
