@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://amomojapam.github.io/angel-number-app/sitemap.xml
