@@ -96,6 +96,9 @@ function renderTop() {
         </button>
       </div>
 
+      <p class="footer-note">
+        <a href="guide.html" style="color:inherit;">✧ エンジェルナンバーの意味一覧を見る</a>
+      </p>
       <p class="footer-note">🕊 本アプリはエンターテインメントを目的としています。<br />医療・法律・投資などの専門的判断に代わるものではありません。</p>
     </div>
   `;
@@ -180,6 +183,9 @@ function renderResult() {
         <a class="btn-share-x" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
           `【${r.number}】のエンジェルナンバー診断\n「${r.card.title}」\n${r.summary}\n\n#エンジェルナンバー #天使からのメッセージ`
         )}&url=${encodeURIComponent(SITE_URL)}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
+        <a class="btn-share-line" href="https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(
+          `【${r.number}】のエンジェルナンバー診断「${r.card.title}」\n${r.summary}`
+        )}" target="_blank" rel="noopener noreferrer">LINEでシェアする</a>
         <button type="button" class="btn-outline" data-action="replay">↻ もう一度見る</button>
         <button type="button" class="btn-primary" data-action="another-theme">別のテーマで見る →</button>
       </div>
@@ -283,6 +289,15 @@ app.addEventListener("click", (e) => {
     render();
   }
 });
+
+// guide.html などから ?number=1111 で開かれたときは、入力欄にあらかじめ数字を入れておく
+(function prefillFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const n = params.get("number");
+  if (n && isKnownAngelNumber(n)) {
+    state.number = n;
+  }
+})();
 
 initStarField();
 render();

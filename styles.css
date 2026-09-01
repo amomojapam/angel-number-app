@@ -251,6 +251,25 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .btn-share-x:hover { transform: translateY(-1px); opacity: 0.9; }
 
+.btn-share-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #06c755;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.btn-share-line:hover { transform: translateY(-1px); opacity: 0.9; }
+
 .btn-text {
   display: block;
   margin: 16px auto 0;
