@@ -1,8 +1,7 @@
 // オリジナル天使キャラクターの SVG（かわいいデフォルメ・簡易ベクター版）。
-// 本物のイラスト（例: public/angel/angel-main.png）が用意できたら、
-// index.html 側の <img> に差し替えるだけで自動的にそちらが優先されます。
 //
-// pose: "default"（微笑み・星を持つ）/ "praying"（目を閉じて祈る＝演出用）
+// pose: "default"（立って微笑み）/ "sitting"（座って微笑み。月や木、雲などのシーン向け）/ "praying"（目を閉じて祈る＝演出用）
+// prop: 近くに浮かぶ小さなアクセサリー。"star" / "heart" / "light" / "leaf" / "none"
 window.App = window.App || {};
 window.App.angelMascot = (function () {
 const HAIR = "#c9a17a";
@@ -36,19 +35,35 @@ function arms(pose) {
   if (pose === "praying") {
     return `<path d="M84 168 Q100 150 116 168 L112 182 Q100 172 88 182 Z" fill="${SKIN}"/>`;
   }
+  if (pose === "sitting") {
+    return `
+      <path d="M68 172 Q66 186 78 190 Q92 184 88 174 Z" fill="${SKIN}"/>
+      <path d="M132 172 Q134 186 122 190 Q108 184 112 174 Z" fill="${SKIN}"/>
+    `;
+  }
   return `
     <path d="M70 168 Q52 160 48 178 Q60 186 76 178 Z" fill="${SKIN}"/>
     <path d="M130 168 Q148 158 154 172 Q140 188 124 180 Z" fill="${SKIN}"/>
-    <g transform="translate(150,158)">
-      <path d="M8 0 L10 6 L16 7 L10.5 10.5 L12 17 L8 13.2 L4 17 L5.5 10.5 L0 7 L6 6 Z" fill="${HALO}"/>
-    </g>
   `;
 }
 
-function angelMascotSVG({ pose = "default", size = 160, className = "" } = {}) {
+function propMarkup(prop) {
+  if (prop === "none") return "";
+  const shapes = {
+    star: `<path d="M8 0 L10 6 L16 7 L10.5 10.5 L12 17 L8 13.2 L4 17 L5.5 10.5 L0 7 L6 6 Z" fill="${HALO}"/>`,
+    heart: `<path d="M8 17 C-2 10 -2 3 4 1 C7 0 8 3 8 5 C8 3 9 0 12 1 C18 3 18 10 8 17 Z" fill="#f2a5bd"/>`,
+    light: `<circle cx="8" cy="8" r="7" fill="${HALO}" opacity="0.35"/><circle cx="8" cy="8" r="3.4" fill="#fff6df"/>`,
+    leaf: `<path d="M8 17 C2 13 1 5 9 0 C13 6 12 14 8 17 Z" fill="#8fbf8a"/><path d="M8 17 C8 12 8 6 9 0" stroke="#6ba668" stroke-width="1" fill="none"/>`,
+  };
+  const shape = shapes[prop] || shapes.star;
+  return `<g transform="translate(150,158)">${shape}</g>`;
+}
+
+function angelMascotSVG({ pose = "default", prop = "star", size = 160, className = "" } = {}) {
   return `
   <svg class="angel-mascot ${className}" width="${size}" height="${size}" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="天使キャラクター">
     <ellipse cx="100" cy="205" rx="46" ry="8" fill="#f3e3ea" opacity="0.6"/>
+    ${propMarkup(prop)}
 
     <!-- wings -->
     <path d="M100 130 C56 110 30 130 20 100 C46 96 66 112 100 150 Z" fill="${WING}" stroke="${WING_EDGE}" stroke-width="2"/>

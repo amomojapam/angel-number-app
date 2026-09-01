@@ -2,7 +2,25 @@ const { isKnownAngelNumber } = window.App.angelNumbers;
 const { THEMES } = window.App.themes;
 const { getReading } = window.App.messageEngine;
 const { angelMascotSVG } = window.App.angelMascot;
-const { motifIconMarkup } = window.App.motifIcons;
+const { sceneMarkup } = window.App.sceneBackgrounds;
+
+// モチーフごとに、カードの中の天使のポーズ・小物を決めます。
+const MOTIF_STYLE = {
+  star: { pose: "default", prop: "star" },
+  moon: { pose: "sitting", prop: "star" },
+  wing: { pose: "default", prop: "none" },
+  flower: { pose: "default", prop: "leaf" },
+  heart: { pose: "default", prop: "heart" },
+  rainbow: { pose: "default", prop: "star" },
+  crystal: { pose: "default", prop: "light" },
+  light: { pose: "default", prop: "light" },
+  cloud: { pose: "sitting", prop: "star" },
+  book: { pose: "sitting", prop: "none" },
+  candle: { pose: "sitting", prop: "light" },
+  tree: { pose: "sitting", prop: "leaf" },
+  bird: { pose: "default", prop: "none" },
+  ocean: { pose: "default", prop: "light" },
+};
 
 const app = document.getElementById("app");
 
@@ -37,22 +55,20 @@ function initStarField() {
 }
 
 // ---------------------------------------------------------------
-// カードの HTML を組み立てる（実画像があればそちらを優先表示）
+// カードの HTML を組み立てる（天使キャラクター + シーンイラスト）
 // ---------------------------------------------------------------
 function cardFaceMarkup(card) {
+  const style = MOTIF_STYLE[card.motif] || MOTIF_STYLE.star;
   return `
     <div class="card-face" style="--face-1:var(--card-${card.palette}-1); --face-2:var(--card-${card.palette}-2); --face-edge:var(--card-${card.palette}-edge);">
       <span class="card-corner tl"></span><span class="card-corner tr"></span>
       <span class="card-corner bl"></span><span class="card-corner br"></span>
       <div class="card-inner">
+        <div class="card-scene-wrap">${sceneMarkup(card.motif)}</div>
+        <div class="card-mascot-wrap">${angelMascotSVG({ pose: style.pose, prop: style.prop, size: 132 })}</div>
         <div class="card-number">No. ${String(card.id).padStart(2, "0")}</div>
-        <div class="card-motif"><svg viewBox="0 0 64 64">${motifIconMarkup(card.motif)}</svg></div>
         <div class="card-title">${card.title}</div>
       </div>
-      <img class="card-real-img" alt="${card.title}"
-           src="public/${card.image}"
-           onload="this.style.display='block'; this.closest('.card-face').classList.add('has-photo');"
-           onerror="this.remove()" />
     </div>
   `;
 }

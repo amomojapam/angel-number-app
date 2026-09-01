@@ -14,7 +14,7 @@ const CARDS = [
   { id: 6, title: "直感を信じて", motif: "star", palette: "blue", coreMeaning: "ふと感じたその直感は、あなたを導く小さなサインです。", image: "cards/card-06.png" },
   { id: 7, title: "願いが叶う時", motif: "light", palette: "gold", coreMeaning: "あなたの願いは、静かに宇宙へ届いています。", image: "cards/card-07.png" },
   { id: 8, title: "希望の光", motif: "rainbow", palette: "blue", coreMeaning: "曇り空の先にも、ちゃんと光は差し込んでいます。", image: "cards/card-08.png" },
-  { id: 9, title: "手放しの時", motif: "cloud", palette: "lavender", coreMeaning: "手放すことで、新しい流れが入ってくる余白が生まれます。", image: "cards/card-09.png" },
+  { id: 9, title: "手放しの時", motif: "ocean", palette: "lavender", coreMeaning: "手放すことで、新しい流れが入ってくる余白が生まれます。", image: "cards/card-09.png" },
   { id: 10, title: "安定の土台", motif: "tree", palette: "mint", coreMeaning: "焦らなくても、あなたの足元にはしっかりとした土台があります。", image: "cards/card-10.png" },
   { id: 11, title: "行動の力", motif: "star", palette: "gold", coreMeaning: "小さな一歩が、未来を静かに動かし始めます。", image: "cards/card-11.png" },
   { id: 12, title: "内なる光", motif: "light", palette: "lavender", coreMeaning: "あなたの中には、ちゃんと光が灯っています。", image: "cards/card-12.png" },
