@@ -95,6 +95,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="src/data/firebaseClient.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    if (window.emailjs) emailjs.init({ publicKey: "nmFwLi4m0EweZvk4_" });
+  </script>
   <script>
     (function () {
       var field = document.getElementById("star-field");
@@ -110,6 +114,13 @@
         field.appendChild(s);
       }
     })();
+
+    var CATEGORY_LABELS = {
+      feedback: "ご感想・ご意見",
+      bug: "不具合の報告",
+      request: "追加してほしい機能",
+      other: "その他",
+    };
 
     var submitBtn = document.getElementById("contactSubmit");
     var errorEl = document.getElementById("contactError");
@@ -127,18 +138,36 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "送信しています…";
 
-      window.App.firebaseClient
-        .submitContact({ name: name, email: email, category: category, message: message })
-        .then(function () {
+      var savePromise = window.App.firebaseClient.submitContact({
+        name: name,
+        email: email,
+        category: category,
+        message: message,
+      });
+
+      var emailPromise = window.emailjs
+        ? emailjs.send("service_xp1fcw8", "template_v9r5uyh", {
+            name: name || "(匿名)",
+            email: email || "(未記入)",
+            category: CATEGORY_LABELS[category] || category,
+            message: message,
+          })
+        : Promise.reject(new Error("emailjs not loaded"));
+
+      Promise.allSettled([savePromise, emailPromise]).then(function (results) {
+        var ok = results.some(function (r) {
+          return r.status === "fulfilled";
+        });
+        if (ok) {
           document.getElementById("formScreen").style.display = "none";
           document.getElementById("doneScreen").style.display = "block";
           window.scrollTo({ top: 0 });
-        })
-        .catch(function () {
+        } else {
           errorEl.textContent = "送信に失敗しました。時間をおいて再度お試しください。";
           submitBtn.disabled = false;
           submitBtn.textContent = "送信する →";
-        });
+        }
+      });
     });
   </script>
 </body>
