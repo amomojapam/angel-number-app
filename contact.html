@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>お問い合わせ | 天使からのメッセージ</title>
+<meta name="description" content="「天使からのメッセージ」エンジェルナンバー診断アプリへのご意見・ご感想・不具合報告はこちらのフォームからお送りください。" />
+<link rel="canonical" href="https://amomojapam.github.io/angel-number-app/contact.html" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#f6e9f5" />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://amomojapam.github.io/angel-number-app/contact.html" />
+<meta property="og:site_name" content="天使からのメッセージ" />
+<meta property="og:title" content="お問い合わせ | 天使からのメッセージ" />
+<meta property="og:description" content="エンジェルナンバー診断アプリへのご意見・ご感想・不具合報告はこちらから。" />
+<meta property="og:image" content="https://amomojapam.github.io/angel-number-app/public/og-character.jpg" />
+<meta property="og:locale" content="ja_JP" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><text y=%2248%22 font-size=%2248%22>👼</text></svg>" />
+<link rel="apple-touch-icon" href="public/apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="star-field" class="star-field" aria-hidden="true"></div>
+  <main class="app">
+    <div class="screen" id="formScreen">
+      <p class="brand-eyebrow">CONTACT</p>
+      <h1 class="title-main">お問い合わせ</h1>
+      <p class="lede">
+        ご意見・ご感想・不具合の報告など、お気軽にお送りください。<br />
+        いただいた内容は運営者のみが確認します。
+      </p>
+
+      <div class="panel">
+        <label class="field-label" for="contactCategory">お問い合わせの種類</label>
+        <select id="contactCategory" class="number-input" style="font-size:15px; text-align:left; appearance:auto; -webkit-appearance:auto;">
+          <option value="feedback">ご感想・ご意見</option>
+          <option value="bug">不具合の報告</option>
+          <option value="request">追加してほしい機能</option>
+          <option value="other">その他</option>
+        </select>
+
+        <label class="field-label" for="contactMessage" style="margin-top:16px;">お問い合わせ内容</label>
+        <textarea
+          id="contactMessage"
+          class="post-textarea"
+          maxlength="2000"
+          style="min-height:140px;"
+          placeholder="内容をご記入ください"
+        ></textarea>
+
+        <label class="field-label" for="contactEmail" style="margin-top:16px;">メールアドレス（返信をご希望の場合・任意）</label>
+        <input
+          id="contactEmail"
+          class="number-input"
+          type="email"
+          autocomplete="email"
+          style="font-size:15px; text-align:left; letter-spacing:normal;"
+          placeholder="example@mail.com"
+        />
+
+        <label class="field-label" for="contactName" style="margin-top:16px;">お名前（任意）</label>
+        <input
+          id="contactName"
+          class="number-input"
+          type="text"
+          autocomplete="name"
+          style="font-size:15px; text-align:left; letter-spacing:normal;"
+          placeholder="ニックネームでも構いません"
+        />
+
+        <p class="error-text" id="contactError"></p>
+
+        <button type="button" class="btn-primary" id="contactSubmit">送信する →</button>
+      </div>
+
+      <p class="footer-note" style="margin-top:24px;">
+        <a href="index.html" style="color:inherit;">← トップへ戻る</a>
+      </p>
+    </div>
+
+    <div class="screen" id="doneScreen" style="display:none; text-align:center;">
+      <p class="brand-eyebrow">CONTACT</p>
+      <h1 class="title-main">送信しました</h1>
+      <p class="lede">
+        お問い合わせいただき、ありがとうございます。<br />
+        内容を確認のうえ、必要に応じてご連絡いたします。
+      </p>
+      <a class="btn-primary" href="index.html" style="text-decoration:none; display:inline-flex; max-width:260px; margin:24px auto 0;">トップへ戻る →</a>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="src/data/firebaseClient.js"></script>
+  <script>
+    (function () {
+      var field = document.getElementById("star-field");
+      for (var i = 0; i < 24; i++) {
+        var s = document.createElement("span");
+        var size = 2 + Math.random() * 3;
+        s.style.width = size + "px";
+        s.style.height = size + "px";
+        s.style.left = Math.random() * 100 + "%";
+        s.style.top = Math.random() * 100 + "%";
+        s.style.animationDelay = Math.random() * 4.5 + "s";
+        s.style.animationDuration = 3.5 + Math.random() * 3 + "s";
+        field.appendChild(s);
+      }
+    })();
+
+    var submitBtn = document.getElementById("contactSubmit");
+    var errorEl = document.getElementById("contactError");
+    submitBtn.addEventListener("click", function () {
+      var message = document.getElementById("contactMessage").value.trim();
+      var email = document.getElementById("contactEmail").value.trim();
+      var name = document.getElementById("contactName").value.trim();
+      var category = document.getElementById("contactCategory").value;
+
+      if (!message) {
+        errorEl.textContent = "お問い合わせ内容をご記入ください。";
+        return;
+      }
+      errorEl.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "送信しています…";
+
+      window.App.firebaseClient
+        .submitContact({ name: name, email: email, category: category, message: message })
+        .then(function () {
+          document.getElementById("formScreen").style.display = "none";
+          document.getElementById("doneScreen").style.display = "block";
+          window.scrollTo({ top: 0 });
+        })
+        .catch(function () {
+          errorEl.textContent = "送信に失敗しました。時間をおいて再度お試しください。";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "送信する →";
+        });
+    });
+  </script>
+</body>
+</html>

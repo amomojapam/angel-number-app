@@ -99,5 +99,18 @@ window.App.firebaseClient = (function () {
     }
   }
 
-  return { recordNumberView, getTodayTop, createPost, getRecentPosts };
+  // お問い合わせフォームの内容を保存します（サイト運営者のみが確認する非公開データ）。
+  function submitContact({ name, email, category, message }) {
+    const database = getDb();
+    if (!database) return Promise.reject(new Error("Firestore is not available"));
+    return database.collection("contactMessages").add({
+      name: (name || "").slice(0, 100),
+      email: (email || "").slice(0, 200),
+      category: category || "other",
+      message: (message || "").slice(0, 2000),
+      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  return { recordNumberView, getTodayTop, createPost, getRecentPosts, submitContact };
 })();

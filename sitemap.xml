@@ -11,6 +11,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://amomojapam.github.io/angel-number-app/contact.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://amomojapam.github.io/angel-number-app/numbers/111.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

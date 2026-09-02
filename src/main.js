@@ -221,6 +221,9 @@ function renderTop() {
       <p class="footer-note">
         <a href="guide.html" style="color:inherit;">✧ エンジェルナンバーの意味一覧を見る</a>
       </p>
+      <p class="footer-note">
+        <a href="contact.html" style="color:inherit;">✧ お問い合わせ</a>
+      </p>
       <p class="footer-note">🕊 本アプリはエンターテインメントを目的としています。<br />医療・法律・投資などの専門的判断に代わるものではありません。</p>
     </div>
   `;
