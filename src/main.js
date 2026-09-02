@@ -2,7 +2,7 @@ const { isKnownAngelNumber } = window.App.angelNumbers;
 const { THEMES } = window.App.themes;
 const { getReading } = window.App.messageEngine;
 const { angelMascotSVG } = window.App.angelMascot;
-const { sceneMarkup } = window.App.sceneBackgrounds;
+const { sceneMarkup, themeDecorMarkup } = window.App.sceneBackgrounds;
 
 // モチーフごとに、カードの中の天使のポーズ・小物を決めます。
 const MOTIF_STYLE = {
@@ -57,7 +57,7 @@ function initStarField() {
 // ---------------------------------------------------------------
 // カードの HTML を組み立てる（天使キャラクター + シーンイラスト）
 // ---------------------------------------------------------------
-function cardFaceMarkup(card) {
+function cardFaceMarkup(card, themeId) {
   const style = MOTIF_STYLE[card.motif] || MOTIF_STYLE.star;
   return `
     <div class="card-face" style="--face-1:var(--card-${card.palette}-1); --face-2:var(--card-${card.palette}-2); --face-edge:var(--card-${card.palette}-edge);">
@@ -65,6 +65,7 @@ function cardFaceMarkup(card) {
       <span class="card-corner bl"></span><span class="card-corner br"></span>
       <div class="card-inner">
         <div class="card-scene-wrap">${sceneMarkup(card.motif)}</div>
+        <div class="card-scene-wrap">${themeDecorMarkup(themeId)}</div>
         <div class="card-mascot-wrap">${angelMascotSVG({ pose: style.pose, prop: style.prop, size: 132 })}</div>
         <div class="card-number">No. ${String(card.id).padStart(2, "0")}</div>
         <div class="card-title">${card.title}</div>
@@ -177,7 +178,7 @@ function renderResult() {
         <span>${theme.icon}</span><span>${theme.label}</span>
       </div>
 
-      <div class="card-stage">${cardFaceMarkup(r.card)}</div>
+      <div class="card-stage">${cardFaceMarkup(r.card, r.theme.id)}</div>
 
       <h2 class="section-title">✦ 今のあなたへのメッセージ</h2>
       <div class="message-text">
@@ -229,15 +230,29 @@ function render() {
 
   const input = document.getElementById("numberInput");
   if (input) {
-    input.addEventListener("input", () => {
+    let isComposing = false;
+    const applyValue = () => {
       const digitsOnly = input.value.replace(/[^0-9]/g, "");
-      input.value = digitsOnly;
+      if (input.value !== digitsOnly) input.value = digitsOnly;
       state.number = digitsOnly;
       state.inputError = "";
       const btn = document.querySelector('[data-action="submit-number"]');
       if (btn) btn.disabled = digitsOnly.trim() === "";
       const err = document.querySelector(".error-text");
       if (err) err.textContent = "";
+    };
+    // 日本語キーボードなどのIME変換中に value を書き換えると、
+    // 変換中の文字が消えてしまうため、変換が終わるまでは何もしない。
+    input.addEventListener("compositionstart", () => {
+      isComposing = true;
+    });
+    input.addEventListener("compositionend", () => {
+      isComposing = false;
+      applyValue();
+    });
+    input.addEventListener("input", () => {
+      if (isComposing) return;
+      applyValue();
     });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") submitNumber();

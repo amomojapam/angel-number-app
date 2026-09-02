@@ -148,5 +148,59 @@ function sceneMarkup(motif) {
   return `<svg class="card-scene" viewBox="0 0 200 300" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${fn()}</svg>`;
 }
 
-return { sceneMarkup };
+// テーマごとに、カード上部の余白に添える小さな飾り。
+function miniFigure(x, y, scale, color) {
+  return `<g transform="translate(${x},${y}) scale(${scale})" opacity="0.9">
+    <circle cx="0" cy="0" r="8" fill="${color}"/>
+    <path d="M-7 10 C-7 22 7 22 7 10 C7 4 -7 4 -7 10 Z" fill="${color}"/>
+  </g>`;
+}
+
+const THEME_DECOR = {
+  work: () => `
+    <g transform="translate(150,64)">
+      <rect x="-13" y="-6" width="26" height="20" rx="4" fill="#b48a5a"/>
+      <path d="M-7 -6 V-11 a7 7 0 0 1 14 0 V-6" fill="none" stroke="#b48a5a" stroke-width="3"/>
+    </g>
+    ${stars([[34,56,0.55],[168,96,0.45]])}
+  `,
+  love: () => `
+    <path transform="translate(32,58) scale(0.9)" d="M8 17C-2 10-2 3 4 1 7 0 8 3 8 5 8 3 9 0 12 1 18 3 18 10 8 17Z" fill="#f2a5bd"/>
+    <path transform="translate(160,80) scale(0.6)" d="M8 17C-2 10-2 3 4 1 7 0 8 3 8 5 8 3 9 0 12 1 18 3 18 10 8 17Z" fill="#f2a5bd" opacity="0.8"/>
+  `,
+  money: () => `
+    ${[[32,50,10],[160,66,9],[46,92,7],[152,36,7]].map(([x,y,r]) => `
+      <circle cx="${x}" cy="${y}" r="${r}" fill="#f6d879" stroke="#e0b84a" stroke-width="1.5"/>
+      <text x="${x}" y="${y+4}" font-size="${r}" text-anchor="middle" fill="#c99433" font-family="Georgia, serif">¥</text>
+    `).join("")}
+    ${stars([[100,32,0.4]])}
+  `,
+  family: () => `
+    ${miniFigure(38, 78, 1.1, "#f2c9a3")}
+    ${miniFigure(56, 88, 0.75, "#f6ddb8")}
+    <path d="M46 78 L48 86" stroke="#e8b892" stroke-width="2" stroke-linecap="round"/>
+  `,
+  life: () => `
+    <path d="M30 90 Q80 40 165 55" fill="none" stroke="#c9bdf0" stroke-width="1.5" stroke-dasharray="1 6" stroke-linecap="round" opacity="0.8"/>
+    ${stars([[165,55,0.7],[36,90,0.5]])}
+  `,
+  health: () => `
+    <path d="M28 70 C24 58 34 52 40 60 C46 52 56 58 52 70 C48 78 40 84 40 84 C40 84 32 78 28 70 Z" fill="#a9d6ad" opacity="0.9"/>
+    <path d="M120 90 H136 L140 78 L146 100 L150 90 H166" fill="none" stroke="#8fbf8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  `,
+  study: () => `
+    <g transform="translate(38,70)">
+      <path d="M-16 -8 C-8 -12 0 -12 0 -8 C0 -12 8 -12 16 -8 V8 C8 4 0 4 0 8 C0 4 -8 4 -16 8 Z" fill="#a9c9f0"/>
+    </g>
+    ${stars([[160,54,0.55],[150,92,0.4]])}
+  `,
+};
+
+function themeDecorMarkup(themeId) {
+  const fn = THEME_DECOR[themeId];
+  if (!fn) return "";
+  return `<svg class="card-theme-decor" viewBox="0 0 200 300" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${fn()}</svg>`;
+}
+
+return { sceneMarkup, themeDecorMarkup };
 })();
