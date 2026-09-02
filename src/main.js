@@ -157,6 +157,11 @@ function renderTop() {
 
       <div id="trendingBox">${trendingBoxMarkup()}</div>
 
+      <div class="community-links">
+        <button type="button" class="btn-outline" data-action="go-post">✧ わたしが見つけたエンジェルナンバーを投稿する</button>
+        <button type="button" class="btn-text" style="margin-top:10px;" data-action="go-feed">みんなの投稿を見る →</button>
+      </div>
+
       <p class="footer-note">
         <a href="guide.html" style="color:inherit;">✧ エンジェルナンバーの意味一覧を見る</a>
       </p>
@@ -249,6 +254,7 @@ function renderResult() {
         )}" target="_blank" rel="noopener noreferrer">LINEでシェアする</a>
         <button type="button" class="btn-outline" data-action="replay">↻ もう一度見る</button>
         <button type="button" class="btn-primary" data-action="another-theme">別のテーマで見る →</button>
+        <button type="button" class="btn-text" data-action="go-post" data-value="${r.number}">✧ この数字を見つけたことを投稿する</button>
       </div>
 
       <div class="result-mascot-row">
@@ -262,48 +268,236 @@ function renderResult() {
 }
 
 // ---------------------------------------------------------------
+// 画面: 投稿フォーム（私が見つけたエンジェルナンバー）
+// ---------------------------------------------------------------
+function renderPostForm() {
+  const f = state.postForm;
+  return `
+    <div class="screen">
+      <button type="button" class="step-back" data-action="back-to-top">← トップへ戻る</button>
+
+      <div class="mascot-wrap">${angelMascotSVG({ pose: "default", size: 108 })}</div>
+      <h1 class="title-main" style="font-size:22px;">わたしが見つけた<br />エンジェルナンバー</h1>
+      <p class="lede">見つけた数字と、そのときの様子を教えてください。<br />みんなの投稿ページに載ります。</p>
+
+      <div class="panel">
+        <label class="field-label" for="postNumberInput">見つけた数字</label>
+        <input
+          id="postNumberInput"
+          class="number-input"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="6"
+          placeholder="1111"
+          value="${f.number}"
+        />
+        <div class="suggest-row">
+          ${SUGGESTED_NUMBERS.map((n) => `<button type="button" class="suggest-chip" data-action="post-fill-number" data-value="${n}">${n}</button>`).join("")}
+        </div>
+
+        <label class="field-label" for="postComment" style="margin-top:16px;">見つけたときの様子（任意）</label>
+        <textarea
+          id="postComment"
+          class="post-textarea"
+          maxlength="200"
+          placeholder="例）駅の時計がぴったり11:11で、なんだか嬉しくなりました。"
+        >${f.comment}</textarea>
+
+        <label class="field-label" style="margin-top:16px;">写真を追加（任意）</label>
+        <input id="postPhotoInput" type="file" accept="image/*" class="post-file-input" />
+        <img id="postPhotoPreview" class="post-photo-preview" style="${f.imageDataUrl ? "" : "display:none;"}" src="${f.imageDataUrl || ""}" alt="プレビュー" />
+
+        <p class="error-text">${f.error}</p>
+
+        <button type="button" class="btn-primary" data-action="submit-post" ${f.submitting ? "disabled" : ""}>
+          ${f.submitting ? "投稿しています…" : "投稿する →"}
+        </button>
+      </div>
+
+      <p class="footer-note">🕊 公序良俗に反する内容・第三者が写り込む写真の投稿はご遠慮ください。<br />投稿内容はどなたでも閲覧できます。</p>
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------
+// 画面: みんなの投稿
+// ---------------------------------------------------------------
+function postCardMarkup(post) {
+  const reading = isKnownAngelNumber(post.number) ? getReading(post.number, "life") : null;
+  const photo = post.imageDataUrl
+    ? `<img class="post-feed-photo" src="${post.imageDataUrl}" alt="${post.number} の投稿画像" />`
+    : "";
+  return `
+    <div class="post-feed-card">
+      ${photo}
+      <div class="post-feed-body">
+        <div class="post-feed-number">${post.number}</div>
+        ${post.comment ? `<p class="post-feed-comment">${post.comment}</p>` : ""}
+        ${
+          reading
+            ? `<div class="post-feed-reading">
+                <span class="post-feed-reading-title">${reading.card.title}</span>
+                <span class="post-feed-reading-text">${reading.summary}</span>
+              </div>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderFeed() {
+  return `
+    <div class="screen">
+      <button type="button" class="step-back" data-action="back-to-top">← トップへ戻る</button>
+
+      <div class="mascot-wrap">${angelMascotSVG({ pose: "default", size: 108 })}</div>
+      <h1 class="title-main" style="font-size:22px;">みんなが見つけた<br />エンジェルナンバー</h1>
+      <p class="lede">みんなの投稿と、天使からのメッセージです。</p>
+
+      <button type="button" class="btn-primary" style="margin-bottom:18px;" data-action="go-post">✧ わたしも投稿する</button>
+
+      <div id="feedList">
+        ${
+          state.feedPosts === null
+            ? `<p class="lede">読み込んでいます…</p>`
+            : state.feedPosts.length === 0
+              ? `<p class="lede">まだ投稿がありません。最初の投稿をしてみませんか？</p>`
+              : state.feedPosts.map(postCardMarkup).join("")
+        }
+      </div>
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------
 // 描画とイベント
 // ---------------------------------------------------------------
+// 数字専用インプット欄に、IME変換中でも安全な半角数字フィルタを付けます。
+function bindDigitInput(input, { onChange, onEnter }) {
+  if (!input) return;
+  let isComposing = false;
+  const applyValue = () => {
+    const digitsOnly = toHalfWidthDigits(input.value).replace(/[^0-9]/g, "");
+    if (input.value !== digitsOnly) input.value = digitsOnly;
+    onChange(digitsOnly);
+  };
+  input.addEventListener("compositionstart", () => {
+    isComposing = true;
+  });
+  input.addEventListener("compositionend", () => {
+    isComposing = false;
+    applyValue();
+  });
+  input.addEventListener("input", () => {
+    if (isComposing) return;
+    applyValue();
+  });
+  if (onEnter) {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") onEnter();
+    });
+  }
+}
+
 function render() {
   if (state.step === "top") app.innerHTML = renderTop();
   else if (state.step === "theme") app.innerHTML = renderTheme();
   else if (state.step === "loading") app.innerHTML = renderLoading();
   else if (state.step === "result") app.innerHTML = renderResult();
+  else if (state.step === "postForm") app.innerHTML = renderPostForm();
+  else if (state.step === "feed") app.innerHTML = renderFeed();
 
   if (state.step === "top") loadTrendingIfNeeded();
+  if (state.step === "feed") loadFeedIfNeeded();
 
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
 
-  const input = document.getElementById("numberInput");
-  if (input) {
-    let isComposing = false;
-    const applyValue = () => {
-      const digitsOnly = toHalfWidthDigits(input.value).replace(/[^0-9]/g, "");
-      if (input.value !== digitsOnly) input.value = digitsOnly;
+  bindDigitInput(document.getElementById("numberInput"), {
+    onChange: (digitsOnly) => {
       state.number = digitsOnly;
       state.inputError = "";
       const btn = document.querySelector('[data-action="submit-number"]');
       if (btn) btn.disabled = digitsOnly.trim() === "";
       const err = document.querySelector(".error-text");
       if (err) err.textContent = "";
-    };
-    // 日本語キーボードなどのIME変換中に value を書き換えると、
-    // 変換中の文字が消えてしまうため、変換が終わるまでは何もしない。
-    input.addEventListener("compositionstart", () => {
-      isComposing = true;
-    });
-    input.addEventListener("compositionend", () => {
-      isComposing = false;
-      applyValue();
-    });
-    input.addEventListener("input", () => {
-      if (isComposing) return;
-      applyValue();
-    });
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") submitNumber();
+    },
+    onEnter: submitNumber,
+  });
+
+  bindDigitInput(document.getElementById("postNumberInput"), {
+    onChange: (digitsOnly) => {
+      state.postForm.number = digitsOnly;
+      state.postForm.error = "";
+    },
+  });
+
+  const commentInput = document.getElementById("postComment");
+  if (commentInput) {
+    commentInput.addEventListener("input", () => {
+      state.postForm.comment = commentInput.value;
     });
   }
+
+  const photoInput = document.getElementById("postPhotoInput");
+  if (photoInput) {
+    photoInput.addEventListener("change", () => {
+      const file = photoInput.files && photoInput.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        state.postForm.error = "画像ファイルを選択してください。";
+        render();
+        return;
+      }
+      resizeImageFile(file, 900, 0.7).then((dataUrl) => {
+        state.postForm.imageDataUrl = dataUrl;
+        const preview = document.getElementById("postPhotoPreview");
+        if (preview) {
+          preview.src = dataUrl;
+          preview.style.display = "block";
+        }
+      });
+    });
+  }
+}
+
+// 画像ファイルを縮小・圧縮して dataURL にします（Firestore に軽量に保存するため）。
+function resizeImageFile(file, maxDimension, quality) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+let feedRequested = false;
+function loadFeedIfNeeded() {
+  if (feedRequested) return;
+  feedRequested = true;
+  getRecentPosts(20).then((posts) => {
+    state.feedPosts = posts;
+    const list = document.getElementById("feedList");
+    if (list && state.step === "feed") render();
+  });
 }
 
 function submitNumber() {
@@ -322,6 +516,37 @@ function submitNumber() {
   state.step = "theme";
   recordNumberView(value);
   render();
+}
+
+function submitPost() {
+  const f = state.postForm;
+  const value = f.number.trim();
+  if (value === "") {
+    f.error = "見つけた数字を入力してください。";
+    render();
+    return;
+  }
+  if (!isKnownAngelNumber(value)) {
+    f.error = "その数字はまだ対応していません。";
+    render();
+    return;
+  }
+  f.error = "";
+  f.submitting = true;
+  render();
+  createPost({ number: value, comment: f.comment.trim(), imageDataUrl: f.imageDataUrl })
+    .then(() => {
+      state.postForm = { number: "", comment: "", imageDataUrl: null, submitting: false, error: "" };
+      state.feedPosts = null;
+      feedRequested = false;
+      state.step = "feed";
+      render();
+    })
+    .catch(() => {
+      f.submitting = false;
+      f.error = "投稿に失敗しました。もう一度お試しください。";
+      render();
+    });
 }
 
 function revealMessage() {
@@ -365,6 +590,20 @@ app.addEventListener("click", (e) => {
     state.selectedThemeId = null;
     state.step = "theme";
     render();
+  } else if (action === "go-post") {
+    if (target.dataset.value) state.postForm.number = target.dataset.value;
+    state.postForm.error = "";
+    state.step = "postForm";
+    render();
+  } else if (action === "go-feed") {
+    state.step = "feed";
+    render();
+  } else if (action === "post-fill-number") {
+    state.postForm.number = target.dataset.value;
+    state.postForm.error = "";
+    render();
+  } else if (action === "submit-post") {
+    submitPost();
   }
 });
 
