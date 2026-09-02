@@ -42,6 +42,7 @@ const state = {
   trending: null, // null=未取得 / []=0件 / [{number,count}, ...]
   postForm: { number: "", comment: "", imageDataUrl: null, submitting: false, error: "" },
   feedPosts: null, // null=未取得 / []=0件 / [{id,number,comment,imageDataUrl,createdAt}, ...]
+  topPosts: null, // TOP画面に出す、みんなの投稿プレビュー（最大5件）
 };
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -74,6 +75,28 @@ function loadTrendingIfNeeded() {
     state.trending = results;
     const box = document.getElementById("trendingBox");
     if (box) box.innerHTML = trendingBoxMarkup();
+  });
+}
+
+function topPostsBoxMarkup() {
+  if (!state.topPosts || state.topPosts.length === 0) return "";
+  return `
+    <div class="top-posts-section">
+      <p class="section-title" style="margin-top:0;">✦ みんなが見つけたエンジェルナンバー</p>
+      ${state.topPosts.map(postCardMarkup).join("")}
+      <button type="button" class="btn-text" data-action="go-feed">もっと見る →</button>
+    </div>
+  `;
+}
+
+let topPostsRequested = false;
+function loadTopPostsIfNeeded() {
+  if (topPostsRequested) return;
+  topPostsRequested = true;
+  getRecentPosts(5).then((posts) => {
+    state.topPosts = posts;
+    const box = document.getElementById("topPostsBox");
+    if (box) box.innerHTML = topPostsBoxMarkup();
   });
 }
 
@@ -159,8 +182,9 @@ function renderTop() {
 
       <div class="community-links">
         <button type="button" class="btn-outline" data-action="go-post">✧ わたしが見つけたエンジェルナンバーを投稿する</button>
-        <button type="button" class="btn-text" style="margin-top:10px;" data-action="go-feed">みんなの投稿を見る →</button>
       </div>
+
+      <div id="topPostsBox">${topPostsBoxMarkup()}</div>
 
       <p class="footer-note">
         <a href="guide.html" style="color:inherit;">✧ エンジェルナンバーの意味一覧を見る</a>
@@ -409,7 +433,10 @@ function render() {
   else if (state.step === "postForm") app.innerHTML = renderPostForm();
   else if (state.step === "feed") app.innerHTML = renderFeed();
 
-  if (state.step === "top") loadTrendingIfNeeded();
+  if (state.step === "top") {
+    loadTrendingIfNeeded();
+    loadTopPostsIfNeeded();
+  }
   if (state.step === "feed") loadFeedIfNeeded();
 
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
