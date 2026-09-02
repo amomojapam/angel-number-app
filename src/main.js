@@ -577,6 +577,8 @@ function submitPost() {
       state.postForm = { number: "", comment: "", imageDataUrl: null, submitting: false, error: "" };
       state.feedPosts = null;
       feedRequested = false;
+      state.topPosts = null;
+      topPostsRequested = false;
       state.step = "feed";
       render();
     })
