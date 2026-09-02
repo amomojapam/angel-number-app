@@ -3,7 +3,7 @@ const { THEMES } = window.App.themes;
 const { getReading } = window.App.messageEngine;
 const { angelMascotSVG } = window.App.angelMascot;
 const { sceneMarkup, themeDecorMarkup } = window.App.sceneBackgrounds;
-const { recordNumberView, getTodayTop } = window.App.firebaseClient;
+const { recordNumberView, getTodayTop, createPost, getRecentPosts } = window.App.firebaseClient;
 
 // モチーフごとに、カードの中の天使のポーズ・小物を決めます。
 const MOTIF_STYLE = {
@@ -34,12 +34,14 @@ const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "111
 const SITE_URL = "https://amomojapam.github.io/angel-number-app/";
 
 const state = {
-  step: "top", // top | theme | loading | result
+  step: "top", // top | theme | loading | result | postForm | feed
   number: "",
   selectedThemeId: null,
   inputError: "",
   reading: null,
   trending: null, // null=未取得 / []=0件 / [{number,count}, ...]
+  postForm: { number: "", comment: "", imageDataUrl: null, submitting: false, error: "" },
+  feedPosts: null, // null=未取得 / []=0件 / [{id,number,comment,imageDataUrl,createdAt}, ...]
 };
 
 const MEDALS = ["🥇", "🥈", "🥉"];

@@ -69,5 +69,35 @@ window.App.firebaseClient = (function () {
     }
   }
 
-  return { recordNumberView, getTodayTop };
+  // 「私が見つけたエンジェルナンバー」投稿を保存します。
+  // 画像は事前にリサイズ・圧縮した dataURL 文字列で受け取り、Firestore にそのまま保存します
+  // （Firebase Storage を使わないので、無料プランのままで運用できます）。
+  function createPost({ number, comment, imageDataUrl }) {
+    const database = getDb();
+    if (!database) return Promise.reject(new Error("Firestore is not available"));
+    return database.collection("posts").add({
+      number,
+      comment: (comment || "").slice(0, 200),
+      imageDataUrl: imageDataUrl || null,
+      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  // 新着の投稿を取得します。
+  async function getRecentPosts(limitCount = 20) {
+    try {
+      const database = getDb();
+      if (!database) return [];
+      const snap = await database
+        .collection("posts")
+        .orderBy("createdAt", "desc")
+        .limit(limitCount)
+        .get();
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  return { recordNumberView, getTodayTop, createPost, getRecentPosts };
 })();
