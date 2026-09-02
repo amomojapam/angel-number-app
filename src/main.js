@@ -352,6 +352,16 @@ function postCardMarkup(post) {
   const photo = post.imageDataUrl
     ? `<img class="post-feed-photo" src="${post.imageDataUrl}" alt="${post.number} の投稿画像" />`
     : "";
+  const shareText = [
+    `【${post.number}】のエンジェルナンバーを見つけました`,
+    post.comment || "",
+    reading ? `「${reading.card.title}」${reading.summary}` : "",
+    "",
+    "#エンジェルナンバー #天使からのメッセージ",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const shareHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
   return `
     <div class="post-feed-card">
       ${photo}
@@ -366,6 +376,7 @@ function postCardMarkup(post) {
               </div>`
             : ""
         }
+        <a class="btn-share-x post-feed-share" href="${shareHref}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
       </div>
     </div>
   `;
