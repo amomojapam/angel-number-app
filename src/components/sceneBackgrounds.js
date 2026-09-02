@@ -169,11 +169,18 @@ const THEME_DECOR = {
     <path transform="translate(160,80) scale(0.6)" d="M8 17C-2 10-2 3 4 1 7 0 8 3 8 5 8 3 9 0 12 1 18 3 18 10 8 17Z" fill="#f2a5bd" opacity="0.8"/>
   `,
   money: () => `
-    ${[[32,50,10],[160,66,9],[46,92,7],[152,36,7]].map(([x,y,r]) => `
-      <circle cx="${x}" cy="${y}" r="${r}" fill="#f6d879" stroke="#e0b84a" stroke-width="1.5"/>
-      <text x="${x}" y="${y+4}" font-size="${r}" text-anchor="middle" fill="#c99433" font-family="Georgia, serif">¥</text>
+    ${[
+      [26,50,11,"¥"],[54,32,7,"¥"],[176,36,8,"¥"],[156,60,10,"¥"],[178,90,8,"¥"],
+      [22,94,8,"¥"],[46,120,10,"1000"],[92,62,6,"¥"],[130,100,12,"5000"],
+      [166,130,7,"¥"],[14,138,6,"¥"],[100,138,8,"¥"],[144,72,6,"¥"],
+    ].map(([x,y,r,label]) => `
+      <g transform="translate(${x},${y})">
+        <circle r="${r}" fill="#f6d879" stroke="#e0b84a" stroke-width="1.4"/>
+        <circle r="${r - 2.4}" fill="none" stroke="#fff2c4" stroke-width="1" opacity="0.8"/>
+        <text y="${label.length > 1 ? r * 0.32 : r * 0.34}" font-size="${label.length > 1 ? r * 0.62 : r}" text-anchor="middle" fill="#c99433" font-family="Georgia, serif" font-weight="${label.length > 1 ? 700 : 400}">${label}</text>
+      </g>
     `).join("")}
-    ${stars([[100,32,0.4]])}
+    ${stars([[100,20,0.4],[190,30,0.35],[10,60,0.35]])}
   `,
   family: () => `
     ${miniFigure(38, 78, 1.1, "#f2c9a3")}

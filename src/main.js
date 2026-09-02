@@ -3,6 +3,7 @@ const { THEMES } = window.App.themes;
 const { getReading } = window.App.messageEngine;
 const { angelMascotSVG } = window.App.angelMascot;
 const { sceneMarkup, themeDecorMarkup } = window.App.sceneBackgrounds;
+const { recordNumberView, getTodayTop } = window.App.firebaseClient;
 
 // モチーフごとに、カードの中の天使のポーズ・小物を決めます。
 const MOTIF_STYLE = {
@@ -29,7 +30,7 @@ function toHalfWidthDigits(str) {
 
 const app = document.getElementById("app");
 
-const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222"];
+const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222", "111111"];
 const SITE_URL = "https://amomojapam.github.io/angel-number-app/";
 
 const state = {
@@ -38,7 +39,41 @@ const state = {
   selectedThemeId: null,
   inputError: "",
   reading: null,
+  trending: null, // null=未取得 / []=0件 / [{number,count}, ...]
 };
+
+const MEDALS = ["🥇", "🥈", "🥉"];
+
+function trendingBoxMarkup() {
+  if (!state.trending || state.trending.length === 0) return "";
+  return `
+    <div class="panel trending-panel">
+      <p class="section-title" style="margin-top:0;">✦ 今日、みんなが気になっているエンジェルナンバー</p>
+      <ul class="trending-list">
+        ${state.trending
+          .map(
+            (t, i) => `
+          <li>
+            <span class="trending-medal">${MEDALS[i] || "✦"}</span>
+            <button type="button" class="trending-number" data-action="fill-number" data-value="${t.number}">${t.number}</button>
+          </li>`
+          )
+          .join("")}
+      </ul>
+    </div>
+  `;
+}
+
+let trendingRequested = false;
+function loadTrendingIfNeeded() {
+  if (trendingRequested) return;
+  trendingRequested = true;
+  getTodayTop(3).then((results) => {
+    state.trending = results;
+    const box = document.getElementById("trendingBox");
+    if (box) box.innerHTML = trendingBoxMarkup();
+  });
+}
 
 // ---------------------------------------------------------------
 // 星の背景演出
@@ -96,14 +131,14 @@ function renderTop() {
       </p>
 
       <div class="panel">
-        <label class="field-label" for="numberInput">気になる数字を入力してください</label>
+        <label class="field-label" for="numberInput">気になる数字を入力してください（3〜6桁）</label>
         <input
           id="numberInput"
           class="number-input"
           type="text"
           inputmode="numeric"
           autocomplete="off"
-          maxlength="5"
+          maxlength="6"
           placeholder="1111"
           value="${state.number}"
         />
@@ -117,6 +152,8 @@ function renderTop() {
           メッセージを受け取る →
         </button>
       </div>
+
+      <div id="trendingBox">${trendingBoxMarkup()}</div>
 
       <p class="footer-note">
         <a href="guide.html" style="color:inherit;">✧ エンジェルナンバーの意味一覧を見る</a>
@@ -231,6 +268,8 @@ function render() {
   else if (state.step === "loading") app.innerHTML = renderLoading();
   else if (state.step === "result") app.innerHTML = renderResult();
 
+  if (state.step === "top") loadTrendingIfNeeded();
+
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
 
   const input = document.getElementById("numberInput");
@@ -279,6 +318,7 @@ function submitNumber() {
   }
   state.inputError = "";
   state.step = "theme";
+  recordNumberView(value);
   render();
 }
 
