@@ -22,6 +22,11 @@ const MOTIF_STYLE = {
   ocean: { pose: "default", prop: "light" },
 };
 
+// 全角数字（０-９）を半角数字に変換します。
+function toHalfWidthDigits(str) {
+  return str.replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+}
+
 const app = document.getElementById("app");
 
 const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222"];
@@ -232,7 +237,7 @@ function render() {
   if (input) {
     let isComposing = false;
     const applyValue = () => {
-      const digitsOnly = input.value.replace(/[^0-9]/g, "");
+      const digitsOnly = toHalfWidthDigits(input.value).replace(/[^0-9]/g, "");
       if (input.value !== digitsOnly) input.value = digitsOnly;
       state.number = digitsOnly;
       state.inputError = "";
