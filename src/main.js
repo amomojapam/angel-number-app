@@ -28,13 +28,42 @@ function toHalfWidthDigits(str) {
   return str.replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
 }
 
+// ---------------------------------------------------------------
+// マイエンジェルナンバー（生年月日から算出する、自分自身の数字）
+// ---------------------------------------------------------------
+const MASTER_NUMBERS = [11, 22, 33, 44, 55, 66, 77, 88, 99];
+
+function sumDigits(str) {
+  return String(str)
+    .split("")
+    .reduce((sum, ch) => sum + (Number.isNaN(Number(ch)) ? 0 : Number(ch)), 0);
+}
+
+// 生年月日（YYYY-MM-DD）から、マイエンジェルナンバーを計算します。
+// 1桁になるまで各桁を足し合わせますが、11・22・33…などのマスターナンバーが出たらそこで止めます。
+function calcMyAngelNumber(dateStr) {
+  const digitsOnly = dateStr.replace(/[^0-9]/g, "");
+  let n = sumDigits(digitsOnly);
+  while (n > 9 && !MASTER_NUMBERS.includes(n)) {
+    n = sumDigits(String(n));
+  }
+  return n;
+}
+
+// マイエンジェルナンバーを、既存のカード診断エンジンで扱える形式に変換します。
+// 例）5 → "555" / 11 → "1111"
+function myNumberToLookupKey(n) {
+  const s = String(n);
+  return s.length >= 2 ? s.repeat(2) : s.repeat(3);
+}
+
 const app = document.getElementById("app");
 
 const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222", "111111"];
 const SITE_URL = "https://amomojapam.github.io/angel-number-app/";
 
 const state = {
-  step: "top", // top | theme | loading | result | postForm | feed
+  step: "top", // top | theme | loading | result | postForm | feed | myNumberForm | myNumberResult
   number: "",
   selectedThemeId: null,
   inputError: "",
@@ -43,6 +72,8 @@ const state = {
   postForm: { number: "", comment: "", imageDataUrl: null, submitting: false, error: "" },
   feedPosts: null, // null=未取得 / []=0件 / [{id,number,comment,imageDataUrl,createdAt}, ...]
   topPosts: null, // TOP画面に出す、みんなの投稿プレビュー（最大5件）
+  myNumberForm: { themeId: null, birthdate: "", error: "" },
+  myNumberReading: null, // { n, lookupNumber, reading } のセット
 };
 
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -181,6 +212,7 @@ function renderTop() {
       <div id="trendingBox">${trendingBoxMarkup()}</div>
 
       <div class="community-links">
+        <button type="button" class="btn-outline" data-action="go-mynumber">✧ マイエンジェルナンバーを調べる</button>
         <button type="button" class="btn-outline" data-action="go-post">✧ わたしが見つけたエンジェルナンバーを投稿する</button>
       </div>
 
@@ -407,6 +439,105 @@ function renderFeed() {
 }
 
 // ---------------------------------------------------------------
+// 画面: マイエンジェルナンバー診断（フォーム）
+// ---------------------------------------------------------------
+function renderMyNumberForm() {
+  const f = state.myNumberForm;
+  const canSubmit = !!f.themeId && !!f.birthdate;
+  return `
+    <div class="screen">
+      <button type="button" class="step-back" data-action="back-to-top">← トップへ戻る</button>
+
+      <div class="mascot-wrap">${angelMascotSVG({ pose: "praying", size: 108 })}</div>
+      <h1 class="title-main" style="font-size:22px;">マイエンジェルナンバー<br />診断</h1>
+      <p class="lede">生年月日から、あなただけのエンジェルナンバーを算出します。<br />予定を決めるときの日時・場所選びの参考にしてみてくださいね。</p>
+
+      <div class="panel">
+        <label class="field-label">知りたいテーマを選んでください</label>
+        <div class="theme-grid">
+          ${THEMES.map((t) => `
+            <button type="button" class="theme-card ${f.themeId === t.id ? "selected" : ""}"
+              style="--tint-bg:var(--theme-${t.accent}-bg); --tint-fg:var(--theme-${t.accent}-fg);"
+              data-action="select-mynumber-theme" data-id="${t.id}">
+              <span class="icon">${t.icon}</span>
+              <span>${t.label}</span>
+            </button>
+          `).join("")}
+        </div>
+
+        <label class="field-label" for="myNumberBirthdate" style="margin-top:6px;">生年月日</label>
+        <input
+          id="myNumberBirthdate"
+          class="number-input"
+          type="date"
+          value="${f.birthdate}"
+          style="font-size:18px;"
+        />
+        <p class="error-text">${f.error}</p>
+
+        <button type="button" class="btn-primary" data-action="submit-mynumber" ${canSubmit ? "" : "disabled"}>
+          マイエンジェルナンバーを見る →
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------
+// 画面: マイエンジェルナンバー診断（結果）
+// ---------------------------------------------------------------
+function renderMyNumberResult() {
+  const mn = state.myNumberReading;
+  const r = mn.reading;
+  const theme = r.theme;
+  return `
+    <div class="screen">
+      <button type="button" class="step-back" data-action="mynumber-back">← テーマ・生年月日を選び直す</button>
+
+      <p class="result-ribbon">✧ MY ANGEL NUMBER ✧</p>
+      <p class="result-number">${mn.n}</p>
+      <div class="result-theme-tag" style="--tint-bg:var(--theme-${theme.accent}-bg); --tint-fg:var(--theme-${theme.accent}-fg);">
+        <span>${theme.icon}</span><span>${theme.label}</span>
+      </div>
+
+      <div class="card-stage">${cardFaceMarkup(r.card, r.theme.id)}</div>
+
+      <h2 class="section-title">✦ あなたへのメッセージ</h2>
+      <div class="message-text">
+        <p style="font-weight:600;">${r.summary}</p>
+        ${r.message.map((p) => `<p>${p}</p>`).join("")}
+      </div>
+
+      <h2 class="section-title">✦ 天使からのアドバイス</h2>
+      <ul class="advice-list">
+        ${r.advice.map((a) => `<li><span class="star">★</span><span>${a}</span></li>`).join("")}
+      </ul>
+
+      <div class="today-word">
+        <div class="section-title" style="justify-content:center;margin:0 0 6px;">✦ 予定を決めるときは</div>
+        あなたのマイエンジェルナンバーは「${mn.n}」。<br />
+        日にちや時間、場所に「${mn.n}」が含まれる瞬間は、<br />
+        あなたにとって特別なタイミングかもしれません。<br />
+        ${theme.label}に関する予定を決めるときの、ひとつの目安にしてみてくださいね。
+      </div>
+
+      <div class="result-actions">
+        <a class="btn-share-x" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          `私のマイエンジェルナンバーは【${mn.n}】でした\n「${r.card.title}」\n${r.summary}\n\n#エンジェルナンバー #天使からのメッセージ`
+        )}&url=${encodeURIComponent(SITE_URL)}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
+        <button type="button" class="btn-outline" data-action="mynumber-back">↻ もう一度調べる</button>
+        <button type="button" class="btn-text" data-action="back-to-top">トップへ戻る</button>
+      </div>
+
+      <div class="result-mascot-row">
+        ${angelMascotSVG({ pose: "default", size: 64 })}
+        <p class="mascot-speech">あなただけの数字を、<br />これからの毎日に役立ててくださいね。</p>
+      </div>
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------------
 // 描画とイベント
 // ---------------------------------------------------------------
 // 数字専用インプット欄に、IME変換中でも安全な半角数字フィルタを付けます。
@@ -443,6 +574,8 @@ function render() {
   else if (state.step === "result") app.innerHTML = renderResult();
   else if (state.step === "postForm") app.innerHTML = renderPostForm();
   else if (state.step === "feed") app.innerHTML = renderFeed();
+  else if (state.step === "myNumberForm") app.innerHTML = renderMyNumberForm();
+  else if (state.step === "myNumberResult") app.innerHTML = renderMyNumberResult();
 
   if (state.step === "top") {
     loadTrendingIfNeeded();
@@ -475,6 +608,16 @@ function render() {
   if (commentInput) {
     commentInput.addEventListener("input", () => {
       state.postForm.comment = commentInput.value;
+    });
+  }
+
+  const birthdateInput = document.getElementById("myNumberBirthdate");
+  if (birthdateInput) {
+    birthdateInput.addEventListener("change", () => {
+      state.myNumberForm.birthdate = birthdateInput.value;
+      state.myNumberForm.error = "";
+      const btn = document.querySelector('[data-action="submit-mynumber"]');
+      if (btn) btn.disabled = !(state.myNumberForm.themeId && state.myNumberForm.birthdate);
     });
   }
 
@@ -589,6 +732,27 @@ function submitPost() {
     });
 }
 
+function submitMyNumber() {
+  const f = state.myNumberForm;
+  if (!f.themeId) {
+    f.error = "テーマを選んでください。";
+    render();
+    return;
+  }
+  if (!f.birthdate) {
+    f.error = "生年月日を入力してください。";
+    render();
+    return;
+  }
+  f.error = "";
+  const n = calcMyAngelNumber(f.birthdate);
+  const lookupKey = myNumberToLookupKey(n);
+  const reading = getReading(lookupKey, f.themeId);
+  state.myNumberReading = { n, lookupKey, reading };
+  state.step = "myNumberResult";
+  render();
+}
+
 function revealMessage() {
   if (!state.selectedThemeId) return;
   state.reading = getReading(state.number, state.selectedThemeId);
@@ -644,6 +808,20 @@ app.addEventListener("click", (e) => {
     render();
   } else if (action === "submit-post") {
     submitPost();
+  } else if (action === "go-mynumber") {
+    state.step = "myNumberForm";
+    render();
+  } else if (action === "select-mynumber-theme") {
+    state.myNumberForm.themeId = target.dataset.id;
+    state.myNumberForm.error = "";
+    render();
+  } else if (action === "submit-mynumber") {
+    submitMyNumber();
+  } else if (action === "mynumber-back") {
+    state.myNumberForm = { themeId: null, birthdate: "", error: "" };
+    state.myNumberReading = null;
+    state.step = "myNumberForm";
+    render();
   }
 });
 
