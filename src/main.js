@@ -212,6 +212,7 @@ function renderTop() {
       <div id="trendingBox">${trendingBoxMarkup()}</div>
 
       <div class="community-links">
+        <a class="btn-outline" href="today.html" style="text-decoration:none;">✧ 今日のエンジェルナンバーを見る</a>
         <button type="button" class="btn-outline" data-action="go-mynumber">✧ マイエンジェルナンバーを調べる</button>
         <button type="button" class="btn-outline" data-action="go-post">✧ わたしが見つけたエンジェルナンバーを投稿する</button>
       </div>
