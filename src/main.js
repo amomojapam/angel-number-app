@@ -61,6 +61,10 @@ const app = document.getElementById("app");
 
 const SUGGESTED_NUMBERS = ["111", "222", "333", "444", "555", "777", "888", "1111", "2222", "111111"];
 const SITE_URL = "https://amomojapam.github.io/angel-number-app/";
+// Xでのシェアだけ、流入元をGA4で区別できるようUTMパラメータを付けます。
+function siteUrlForXShare(campaign) {
+  return `${SITE_URL}?utm_source=twitter&utm_medium=social&utm_campaign=${campaign}`;
+}
 
 const state = {
   step: "top", // top | theme | loading | result | postForm | feed | myNumberForm | myNumberResult
@@ -308,7 +312,7 @@ function renderResult() {
       <div class="result-actions">
         <a class="btn-share-x" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
           `【${r.number}】のエンジェルナンバー診断\n「${r.card.title}」\n${r.summary}\n\n#エンジェルナンバー #天使からのメッセージ`
-        )}&url=${encodeURIComponent(SITE_URL)}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
+        )}&url=${encodeURIComponent(siteUrlForXShare("result_share"))}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
         <a class="btn-share-line" href="https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(
           `【${r.number}】のエンジェルナンバー診断「${r.card.title}」\n${r.summary}`
         )}" target="_blank" rel="noopener noreferrer">LINEでシェアする</a>
@@ -397,7 +401,7 @@ function postCardMarkup(post) {
   ]
     .filter(Boolean)
     .join("\n");
-  const shareHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
+  const shareHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(siteUrlForXShare("post_share"))}`;
   return `
     <div class="post-feed-card">
       ${photo}
@@ -528,7 +532,7 @@ function renderMyNumberResult() {
       <div class="result-actions">
         <a class="btn-share-x" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(
           `私のマイエンジェルナンバーは【${mn.n}】でした\n「${r.card.title}」\n${r.summary}\n\n#エンジェルナンバー #天使からのメッセージ`
-        )}&url=${encodeURIComponent(SITE_URL)}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
+        )}&url=${encodeURIComponent(siteUrlForXShare("mynumber_share"))}" target="_blank" rel="noopener noreferrer">𝕏 にシェアする</a>
         <button type="button" class="btn-outline" data-action="mynumber-back">↻ もう一度調べる</button>
         <button type="button" class="btn-text" data-action="back-to-top">トップへ戻る</button>
       </div>
